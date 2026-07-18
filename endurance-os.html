@@ -494,51 +494,71 @@ async function renderWorkout(){
   const el=document.getElementById('view-workout');
   el.innerHTML=`<div class="panel"><div class="ai-thinking">Loading your next session…</div></div>`;
   const nextDay=await getNextCycleDay();
-  const tmpl=TEMPLATES.find(t=>t.cycleDay===nextDay)||TEMPLATES[0];
-  // Load last session weights for this cycleDay to pre-fill
+  renderWorkoutForDay(nextDay);
+}
+
+async function renderWorkoutForDay(selectedDay){
+  const el=document.getElementById('view-workout');
+  el.innerHTML=`<div class="panel"><div class="ai-thinking">Loading session…</div></div>`;
+  const tmpl=TEMPLATES.find(t=>t.cycleDay===selectedDay)||TEMPLATES[0];
   const data=await fbGet(uk('workouts'));
   let lastSameDay=null;
   if(data){
     const sessions=Object.values(data)
-      .filter(s=>s.cycleDay===nextDay)
+      .filter(s=>s.cycleDay===selectedDay)
       .sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
     lastSameDay=sessions[0]||null;
   }
-  // Build active session from template, override weights from last same-day session
   activeSession={
     date:TODAY,
     cycleDay:tmpl.cycleDay,
     name:tmpl.label,
     notes:'',
-    exercises: tmpl.exercises.map(te=>{
+    exercises:tmpl.exercises.map(te=>{
       const exInfo=EX_LIB[te.code]||{name:te.code,type:'sets'};
-      // find same exercise from last same-day session
       const lastEx=lastSameDay?.exercises?.find(e=>e.code===te.code);
       const sets=(lastEx?.sets||te.sets).map(s=>({...s}));
-      return {code:te.code, name:exInfo.name, type:exInfo.type, cue:exInfo.cue, sets};
+      return{code:te.code,name:exInfo.name,type:exInfo.type,cue:exInfo.cue,sets};
     })
   };
-  renderWorkoutForm(tmpl, lastSameDay);
+  renderWorkoutForm(tmpl,lastSameDay,selectedDay);
 }
 
-function renderWorkoutForm(tmpl, lastSameDay){
+function renderWorkoutForm(tmpl, lastSameDay, selectedDay){
   const el=document.getElementById('view-workout');
   const u=getUser();
   const daysSince=lastSameDay?Math.round((Date.now()-new Date(lastSameDay.savedAt))/(1000*60*60*24)):null;
 
+  // Day selector buttons
+  const daySelector=`
+  <div class="panel" style="padding:12px;margin-bottom:10px">
+    <div style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:8px">SELECT CYCLE DAY</div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      ${TEMPLATES.map(t=>{
+        const active=t.cycleDay===selectedDay;
+        return `<button onclick="renderWorkoutForDay(${t.cycleDay})" style="flex:1;min-width:60px;padding:10px 6px;background:${active?'var(--panel2)':'transparent'};border:${active?'2px solid var(--accent)':'1px solid var(--line)'};border-radius:var(--radius);cursor:pointer;font-family:var(--mono);transition:all .12s">
+          <div style="font-size:18px">${t.icon}</div>
+          <div style="font-size:9px;color:${active?'var(--accent)':'var(--faint)'};letter-spacing:1px;margin-top:4px;font-weight:${active?700:400}">${t.cycleDay===4?'REST':t.label.split(' & ')[0].split(' ')[0]}</div>
+          <div style="font-size:9px;color:${active?'var(--accent)':'var(--faint)'};opacity:.7">DAY ${t.cycleDay}</div>
+          ${active?`<div style="width:5px;height:5px;border-radius:50%;background:var(--accent);margin:4px auto 0"></div>`:''}
+        </button>`;
+      }).join('')}
+    </div>
+  </div>`;
+
   if(tmpl.cycleDay===4){
     el.innerHTML=`
+    ${daySelector}
     <div class="panel" style="text-align:center;padding:32px">
       <div style="font-size:48px;margin-bottom:14px">💤</div>
       <h2>REST DAY</h2>
       <p style="margin-bottom:16px">Recovery is where the gains happen. No gym today.</p>
       <div class="note ok">✓ Gym is busy today — smart move to skip. Sleep well, eat protein, hydrate.</div>
       <div style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="btn ghost sm" onclick="skipToNext()">SKIP → NEXT CYCLE DAY</button>
+        <button class="btn ghost sm" onclick="renderWorkoutForDay(1)">TRAIN INSTEAD →</button>
         <button class="btn ghost sm" onclick="show('coach');renderCoach()">ASK AI COACH</button>
       </div>
-    </div>
-    ${renderCycleStatus(tmpl.cycleDay)}`;
+    </div>`;
     return;
   }
 
@@ -575,7 +595,7 @@ function renderWorkoutForm(tmpl, lastSameDay){
   }).join('');
 
   el.innerHTML=`
-  ${renderCycleStatus(tmpl.cycleDay)}
+  ${daySelector}
   <div class="panel">
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
       <span style="font-size:22px">${tmpl.icon}</span>
@@ -593,44 +613,15 @@ function renderWorkoutForm(tmpl, lastSameDay){
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button class="btn" onclick="saveWorkout()">💾 SAVE & SYNC</button>
-      <button class="btn ghost sm" onclick="renderWorkout()">↺ RELOAD</button>
+      <button class="btn ghost sm" onclick="renderWorkout()">↺ AUTO-DETECT DAY</button>
     </div>
   </div>`;
 }
 
-function renderCycleStatus(currentDay){
-  const days=TEMPLATES.map(t=>{
-    const active=t.cycleDay===currentDay;
-    const color=active?t.color:'var(--faint)';
-    return `<div style="flex:1;text-align:center;padding:9px 6px;background:${active?'var(--panel2)':'transparent'};border:1px solid ${active?'var(--line)':'transparent'};border-radius:var(--radius)">
-      <div style="font-size:16px">${t.icon}</div>
-      <div style="font-size:9px;color:${color};letter-spacing:1px;margin-top:3px;font-weight:${active?700:400}">${t.cycleDay===4?'REST':t.label.split(' ')[0]}</div>
-      ${active?`<div style="width:6px;height:6px;border-radius:50%;background:var(--accent);margin:4px auto 0"></div>`:''}
-    </div>`;
-  }).join('');
-  return `<div class="panel" style="padding:12px;margin-bottom:10px">
-    <div style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:8px">CYCLE POSITION</div>
-    <div style="display:flex;gap:4px">${days}</div>
-  </div>`;
-}
-
 window.sv=function(ei,si,k,v){if(activeSession?.exercises[ei])activeSession.exercises[ei].sets[si][k]=+v||v;};
-window.addSet=function(ei){activeSession.exercises[ei].sets.push({reps:'',weight:''});const el=document.getElementById('exFormList');if(el)el.innerHTML=activeSession.exercises.map((_,i)=>i).reduce((h,i)=>h,renderExForms());renderWorkout();};
-window.rmSet=function(ei,si){activeSession.exercises[ei].sets.splice(si,1);renderWorkout();};
-window.rmEx=function(ei){activeSession.exercises.splice(ei,1);renderWorkout();};
-window.skipToNext=async function(){
-  // Advance cycle without saving a workout
-  const cur=activeSession?.cycleDay||4;
-  const nextDay=cur>=4?1:cur+1;
-  const tmpl=TEMPLATES.find(t=>t.cycleDay===nextDay)||TEMPLATES[0];
-  activeSession={date:TODAY,cycleDay:tmpl.cycleDay,name:tmpl.label,notes:'',
-    exercises:tmpl.exercises.map(te=>{
-      const exInfo=EX_LIB[te.code]||{name:te.code,type:'sets'};
-      return {code:te.code,name:exInfo.name,type:exInfo.type,cue:exInfo.cue,sets:te.sets.map(s=>({...s}))};
-    })
-  };
-  renderWorkoutForm(tmpl,null);
-};
+window.addSet=function(ei){activeSession.exercises[ei].sets.push({reps:'',weight:''});renderWorkoutForDay(activeSession.cycleDay);};
+window.rmSet=function(ei,si){activeSession.exercises[ei].sets.splice(si,1);renderWorkoutForDay(activeSession.cycleDay);};
+window.rmEx=function(ei){activeSession.exercises.splice(ei,1);renderWorkoutForDay(activeSession.cycleDay);};
 
 window.saveWorkout=async function(){
   if(!activeSession||activeSession.cycleDay===4)return;
