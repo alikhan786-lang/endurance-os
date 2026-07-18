@@ -378,6 +378,7 @@ window.addUser=async function(){
 };
 window.selectUser=function(id){
   currentUID=id;
+  userTemplates=null; // clear cache so new user gets their own templates
   const u=getUser();
   document.getElementById('headerAvatar').textContent=u.name[0].toUpperCase();
   document.getElementById('view-users').classList.add('hidden');
@@ -422,56 +423,173 @@ const EX_LIB={
 };
 
 // ── WORKOUT TEMPLATES ─────────────────────────────────────────────────────────
-// cycleDay: 1=Chest/Tri, 2=Back/Bi, 3=Shoulders/Core, 4=REST
-const TEMPLATES=[
+// Default templates — seeded into Firebase on first use, then user-owned
+const DEFAULT_TEMPLATES=[
   {
-    cycleDay:1, label:'CHEST & TRICEPS', icon:'🔴', color:'#f87171',
+    cycleDay:1,label:'CHEST & TRICEPS',icon:'🔴',color:'#f87171',
     exercises:[
-      {code:'C1',  sets:[{mins:20}]},
-      {code:'CT1', sets:[{reps:12,weight:10},{reps:10,weight:14},{reps:8,weight:22}]},
-      {code:'CT2', sets:[{reps:12,weight:10},{reps:10,weight:14},{reps:8,weight:14}]},
-      {code:'CT3', sets:[{reps:12,weight:14},{reps:10,weight:18},{reps:8,weight:22}]},
-      {code:'CT4', sets:[{reps:12,weight:18},{reps:10,weight:20},{reps:8,weight:22}]},
-      {code:'CT5', sets:[{reps:10,weight:10},{reps:8,weight:14},{reps:6,weight:18}]},
-      {code:'CT6', sets:[{reps:6,weight:0},{reps:6,weight:0},{reps:6,weight:0}]},
+      {code:'C1',sets:[{mins:20}]},
+      {code:'CT1',sets:[{reps:12,weight:10},{reps:10,weight:14},{reps:8,weight:22}]},
+      {code:'CT2',sets:[{reps:12,weight:10},{reps:10,weight:14},{reps:8,weight:14}]},
+      {code:'CT3',sets:[{reps:12,weight:14},{reps:10,weight:18},{reps:8,weight:22}]},
+      {code:'CT4',sets:[{reps:12,weight:18},{reps:10,weight:20},{reps:8,weight:22}]},
+      {code:'CT5',sets:[{reps:10,weight:10},{reps:8,weight:14},{reps:6,weight:18}]},
+      {code:'CT6',sets:[{reps:6,weight:0},{reps:6,weight:0},{reps:6,weight:0}]},
     ]
   },
   {
-    cycleDay:2, label:'BACK & BICEPS', icon:'🔵', color:'#818cf8',
+    cycleDay:2,label:'BACK & BICEPS',icon:'🔵',color:'#818cf8',
     exercises:[
-      {code:'C1',  sets:[{mins:20}]},
-      {code:'BB1', sets:[{reps:12,weight:30},{reps:10,weight:35},{reps:8,weight:40}]},
-      {code:'BB2', sets:[{reps:12,weight:30},{reps:10,weight:35},{reps:8,weight:40}]},
-      {code:'BB3', sets:[{reps:12,weight:20},{reps:10,weight:25},{reps:8,weight:30}]},
-      {code:'BB4', sets:[{reps:12,weight:7}, {reps:10,weight:10},{reps:8,weight:12}]},
-      {code:'BB7', sets:[{reps:12,weight:10},{reps:10,weight:10},{reps:8,weight:15}]},
-      {code:'BB8', sets:[{reps:12,weight:5}, {reps:10,weight:7}, {reps:8,weight:10}]},
-      {code:'BB9', sets:[{reps:12,weight:5}, {reps:10,weight:5}, {reps:8,weight:10}]},
+      {code:'C1',sets:[{mins:20}]},
+      {code:'BB1',sets:[{reps:12,weight:30},{reps:10,weight:35},{reps:8,weight:40}]},
+      {code:'BB2',sets:[{reps:12,weight:30},{reps:10,weight:35},{reps:8,weight:40}]},
+      {code:'BB3',sets:[{reps:12,weight:20},{reps:10,weight:25},{reps:8,weight:30}]},
+      {code:'BB4',sets:[{reps:12,weight:7},{reps:10,weight:10},{reps:8,weight:12}]},
+      {code:'BB7',sets:[{reps:12,weight:10},{reps:10,weight:10},{reps:8,weight:15}]},
+      {code:'BB8',sets:[{reps:12,weight:5},{reps:10,weight:7},{reps:8,weight:10}]},
+      {code:'BB9',sets:[{reps:12,weight:5},{reps:10,weight:5},{reps:8,weight:10}]},
     ]
   },
   {
-    cycleDay:3, label:'SHOULDERS & CORE', icon:'🟡', color:'#fbbf24',
+    cycleDay:3,label:'SHOULDERS & CORE',icon:'🟡',color:'#fbbf24',
     exercises:[
-      {code:'C1',  sets:[{mins:20}]},
-      {code:'SH1', sets:[{reps:12,weight:20},{reps:10,weight:20},{reps:8,weight:22}]},
-      {code:'SH2', sets:[{reps:12,weight:10},{reps:10,weight:10},{reps:8,weight:15}]},
-      {code:'SH3', sets:[{reps:10,weight:10},{reps:8,weight:10}, {reps:6,weight:15}]},
-      {code:'SH4', sets:[{reps:10,weight:10},{reps:8,weight:15}, {reps:8,weight:20}]},
-      {code:'SH5', sets:[{reps:12,weight:20},{reps:10,weight:22},{reps:8,weight:25}]},
-      {code:'LG2', sets:[{reps:10,weight:22},{reps:10,weight:22},{reps:10,weight:22}]},
-      {code:'LG5', sets:[{reps:10,weight:12},{reps:10,weight:15},{reps:10,weight:17}]},
-      {code:'LG6', sets:[{reps:10,weight:22},{reps:10,weight:22},{reps:10,weight:22}]},
-      {code:'C',   sets:[{reps:15,weight:12},{reps:15,weight:12},{reps:15,weight:12}]},
+      {code:'C1',sets:[{mins:20}]},
+      {code:'SH1',sets:[{reps:12,weight:20},{reps:10,weight:20},{reps:8,weight:22}]},
+      {code:'SH2',sets:[{reps:12,weight:10},{reps:10,weight:10},{reps:8,weight:15}]},
+      {code:'SH3',sets:[{reps:10,weight:10},{reps:8,weight:10},{reps:6,weight:15}]},
+      {code:'SH4',sets:[{reps:10,weight:10},{reps:8,weight:15},{reps:8,weight:20}]},
+      {code:'SH5',sets:[{reps:12,weight:20},{reps:10,weight:22},{reps:8,weight:25}]},
+      {code:'LG2',sets:[{reps:10,weight:22},{reps:10,weight:22},{reps:10,weight:22}]},
+      {code:'LG5',sets:[{reps:10,weight:12},{reps:10,weight:15},{reps:10,weight:17}]},
+      {code:'LG6',sets:[{reps:10,weight:22},{reps:10,weight:22},{reps:10,weight:22}]},
+      {code:'C',sets:[{reps:15,weight:12},{reps:15,weight:12},{reps:15,weight:12}]},
     ]
   },
-  {
-    cycleDay:4, label:'REST DAY', icon:'💤', color:'var(--faint)',
-    exercises:[]
-  }
+  {cycleDay:4,label:'REST DAY',icon:'💤',color:'var(--faint)',exercises:[]}
 ];
 
+// Cache loaded user templates in memory
+let userTemplates=null;
+
+async function getUserTemplates(){
+  if(userTemplates)return userTemplates;
+  const data=await fbGet(uk('templates'));
+  if(data&&Array.isArray(data)&&data.length){
+    userTemplates=data;
+  } else {
+    // First time — seed defaults into Firebase for this user
+    await fbSet(uk('templates'),DEFAULT_TEMPLATES);
+    userTemplates=JSON.parse(JSON.stringify(DEFAULT_TEMPLATES));
+  }
+  return userTemplates;
+}
+
+async function saveUserTemplates(){
+  await fbSet(uk('templates'),userTemplates);
+}
+
+// ── TEMPLATE EDITOR ───────────────────────────────────────────────────────────
+let editingTemplateDay=null;
+
+window.openTemplateEditor=async function(cycleDay){
+  editingTemplateDay=cycleDay;
+  const tmpls=await getUserTemplates();
+  const tmpl=tmpls.find(t=>t.cycleDay===cycleDay);
+  if(!tmpl||tmpl.cycleDay===4)return;
+  const el=document.getElementById('view-workout');
+
+  // Build exercise picker — grouped
+  const EX_GROUPS={
+    'CARDIO':['C1','C2','C3','C4','C5','C6','C7'],
+    'BACK & BICEPS':['BB1','BB2','BB3','BB4','BB5','BB6','BB7','BB8','BB9','BB10'],
+    'CHEST & TRICEPS':['CT1','CT2','CT3','CT4','CT5','CT6'],
+    'SHOULDERS':['SH1','SH2','SH3','SH4','SH5'],
+    'LEGS':['LG1','LG2','LG3','LG4','LG5','LG6','LG7'],
+    'CORE':['A','B','C','D','E','F'],
+    'FULL BODY':['FB1','FB2','FB3'],
+    'HOME / DUMBBELL':['HD1','HD2','HD3','HD4','HD5','HD6','HD7','HD8'],
+    'YOGA / MOBILITY':['YG1','YG2','YG3','YG4','YG5'],
+  };
+
+  const currentCodes=tmpl.exercises.map(e=>e.code);
+  const pickerHTML=Object.entries(EX_GROUPS).map(([grp,codes])=>{
+    const available=codes.filter(c=>EX_LIB[c]&&!currentCodes.includes(c));
+    if(!available.length)return'';
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:5px">${grp}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${available.map(c=>`<button class="food-chip" id="addex_${c}" style="border-color:var(--accent2)">
+          + ${EX_LIB[c].name}
+        </button>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
+  const currentList=tmpl.exercises.map((ex,i)=>{
+    const info=EX_LIB[ex.code]||{name:ex.code};
+    return `<div style="display:flex;align-items:center;gap:8px;padding:9px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);margin-bottom:6px">
+      <span style="font-size:10px;color:var(--faint);width:30px">${ex.code}</span>
+      <span style="flex:1;font-size:12px;color:var(--ink)">${info.name}</span>
+      <button class="btn danger sm" id="delex_${i}">REMOVE</button>
+    </div>`;
+  }).join('');
+
+  el.innerHTML=`
+  <div class="panel">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+      <span style="font-size:20px">${tmpl.icon}</span>
+      <h2 style="margin-bottom:0;color:${tmpl.color}">EDIT — ${tmpl.label}</h2>
+    </div>
+    <div class="note" style="margin-bottom:12px">Changes save to your personal template only. Your wife's template is separate.</div>
+    <h3>CURRENT EXERCISES</h3>
+    <div id="tmplCurrentList">${currentList}</div>
+    <h3 style="margin-top:16px">ADD EXERCISE</h3>
+    <div id="tmplPicker" style="max-height:280px;overflow-y:auto;padding:4px">${pickerHTML}</div>
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+      <button class="btn" id="saveTmplBtn">💾 SAVE TEMPLATE</button>
+      <button class="btn ghost sm" id="cancelTmplBtn">CANCEL</button>
+    </div>
+    <div id="tmplMsg" style="font-size:11px;margin-top:8px"></div>
+  </div>`;
+
+  // Attach remove buttons
+  tmpl.exercises.forEach((_,i)=>{
+    document.getElementById('delex_'+i)?.addEventListener('click',async()=>{
+      const t=await getUserTemplates();
+      const tm=t.find(x=>x.cycleDay===cycleDay);
+      tm.exercises.splice(i,1);
+      openTemplateEditor(cycleDay);
+    });
+  });
+
+  // Attach add buttons
+  Object.values(EX_GROUPS).flat().forEach(c=>{
+    const btn=document.getElementById('addex_'+c);
+    if(!btn)return;
+    btn.addEventListener('click',async()=>{
+      const t=await getUserTemplates();
+      const tm=t.find(x=>x.cycleDay===cycleDay);
+      const info=EX_LIB[c];
+      const defaultSets=info.type==='duration'?[{mins:20}]:info.type==='duration_s'?[{secs:30}]:[{reps:10,weight:0}];
+      tm.exercises.push({code:c,sets:defaultSets});
+      openTemplateEditor(cycleDay);
+    });
+  });
+
+  // Save
+  document.getElementById('saveTmplBtn')?.addEventListener('click',async()=>{
+    document.getElementById('tmplMsg').textContent='Saving…';
+    await saveUserTemplates();
+    userTemplates=null; // force reload
+    document.getElementById('tmplMsg').innerHTML='<span style="color:var(--accent)">✓ Saved! Reloading session…</span>';
+    setTimeout(()=>renderWorkoutForDay(cycleDay),900);
+  });
+  // Cancel
+  document.getElementById('cancelTmplBtn')?.addEventListener('click',()=>renderWorkoutForDay(cycleDay));
+};
+
 // ── WORKOUT STATE ─────────────────────────────────────────────────────────────
-let activeSession=null; // loaded from template or Firebase
+let activeSession=null;
 
 function calcVol(ex){
   if(!ex.sets||!ex.sets.length)return 0;
@@ -479,15 +597,13 @@ function calcVol(ex){
   return ex.sets.reduce((t,s)=>t+((+s.reps||0)*(+s.weight||0)),0);
 }
 
-// Figure out next cycle day from workout history
 async function getNextCycleDay(){
   const data=await fbGet(uk('workouts'));
   if(!data)return 1;
   const sessions=Object.values(data).sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
   const last=sessions[0];
   if(!last||!last.cycleDay)return 1;
-  const next=last.cycleDay>=4?1:last.cycleDay+1;
-  return next;
+  return last.cycleDay>=4?1:last.cycleDay+1;
 }
 
 async function renderWorkout(){
@@ -500,6 +616,7 @@ async function renderWorkout(){
 async function renderWorkoutForDay(selectedDay){
   const el=document.getElementById('view-workout');
   el.innerHTML=`<div class="panel"><div class="ai-thinking">Loading session…</div></div>`;
+  const TEMPLATES=await getUserTemplates();
   const tmpl=TEMPLATES.find(t=>t.cycleDay===selectedDay)||TEMPLATES[0];
   const data=await fbGet(uk('workouts'));
   let lastSameDay=null;
@@ -510,10 +627,7 @@ async function renderWorkoutForDay(selectedDay){
     lastSameDay=sessions[0]||null;
   }
   activeSession={
-    date:TODAY,
-    cycleDay:tmpl.cycleDay,
-    name:tmpl.label,
-    notes:'',
+    date:TODAY,cycleDay:tmpl.cycleDay,name:tmpl.label,notes:'',
     exercises:tmpl.exercises.map(te=>{
       const exInfo=EX_LIB[te.code]||{name:te.code,type:'sets'};
       const lastEx=lastSameDay?.exercises?.find(e=>e.code===te.code);
@@ -521,22 +635,22 @@ async function renderWorkoutForDay(selectedDay){
       return{code:te.code,name:exInfo.name,type:exInfo.type,cue:exInfo.cue,sets};
     })
   };
-  renderWorkoutForm(tmpl,lastSameDay,selectedDay);
+  renderWorkoutForm(tmpl,lastSameDay,selectedDay,TEMPLATES);
 }
 
-function renderWorkoutForm(tmpl, lastSameDay, selectedDay){
+function renderWorkoutForm(tmpl, lastSameDay, selectedDay, TEMPLATES){
   const el=document.getElementById('view-workout');
   const u=getUser();
   const daysSince=lastSameDay?Math.round((Date.now()-new Date(lastSameDay.savedAt))/(1000*60*60*24)):null;
 
-  // Day selector buttons
+  // Day selector
   const daySelector=`
   <div class="panel" style="padding:12px;margin-bottom:10px">
     <div style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:8px">SELECT CYCLE DAY</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap">
       ${TEMPLATES.map(t=>{
         const active=t.cycleDay===selectedDay;
-        return `<button onclick="renderWorkoutForDay(${t.cycleDay})" style="flex:1;min-width:60px;padding:10px 6px;background:${active?'var(--panel2)':'transparent'};border:${active?'2px solid var(--accent)':'1px solid var(--line)'};border-radius:var(--radius);cursor:pointer;font-family:var(--mono);transition:all .12s">
+        return `<button id="daybtn_${t.cycleDay}" style="flex:1;min-width:60px;padding:10px 6px;background:${active?'var(--panel2)':'transparent'};border:${active?'2px solid var(--accent)':'1px solid var(--line)'};border-radius:var(--radius);cursor:pointer;font-family:var(--mono);transition:all .12s">
           <div style="font-size:18px">${t.icon}</div>
           <div style="font-size:9px;color:${active?'var(--accent)':'var(--faint)'};letter-spacing:1px;margin-top:4px;font-weight:${active?700:400}">${t.cycleDay===4?'REST':t.label.split(' & ')[0].split(' ')[0]}</div>
           <div style="font-size:9px;color:${active?'var(--accent)':'var(--faint)'};opacity:.7">DAY ${t.cycleDay}</div>
@@ -553,12 +667,18 @@ function renderWorkoutForm(tmpl, lastSameDay, selectedDay){
       <div style="font-size:48px;margin-bottom:14px">💤</div>
       <h2>REST DAY</h2>
       <p style="margin-bottom:16px">Recovery is where the gains happen. No gym today.</p>
-      <div class="note ok">✓ Gym is busy today — smart move to skip. Sleep well, eat protein, hydrate.</div>
+      <div class="note ok">Gym is busy today — smart move to skip. Sleep well, eat protein, hydrate.</div>
       <div style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
-        <button class="btn ghost sm" onclick="renderWorkoutForDay(1)">TRAIN INSTEAD →</button>
-        <button class="btn ghost sm" onclick="show('coach');renderCoach()">ASK AI COACH</button>
+        <button class="btn ghost sm" id="trainInsteadBtn">TRAIN INSTEAD →</button>
+        <button class="btn ghost sm" id="askCoachBtn">ASK AI COACH</button>
       </div>
     </div>`;
+    TEMPLATES.forEach(t=>{
+      document.getElementById('daybtn_'+t.cycleDay)
+        ?.addEventListener('click',()=>renderWorkoutForDay(t.cycleDay));
+    });
+    document.getElementById('trainInsteadBtn')?.addEventListener('click',()=>renderWorkoutForDay(1));
+    document.getElementById('askCoachBtn')?.addEventListener('click',()=>{show('coach');renderCoach();});
     return;
   }
 
@@ -603,7 +723,10 @@ function renderWorkoutForm(tmpl, lastSameDay, selectedDay){
         <h2 style="margin-bottom:2px;color:${tmpl.color}">${tmpl.label}</h2>
         <div style="font-size:10px;color:var(--faint)">${u.name.toUpperCase()} · ${new Date().toDateString().toUpperCase()}</div>
       </div>
-      ${lastSameDay?`<div style="margin-left:auto;text-align:right;font-size:10px;color:var(--faint)">LAST: ${daysSince}d ago<br>${new Date(lastSameDay.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>`:'<div style="margin-left:auto;font-size:10px;color:var(--warn)">FIRST SESSION</div>'}
+      <div style="margin-left:auto;display:flex;flex-direction:column;align-items:flex-end;gap:4px">
+        ${lastSameDay?`<div style="text-align:right;font-size:10px;color:var(--faint)">LAST: ${daysSince}d ago · ${new Date(lastSameDay.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>`:'<div style="font-size:10px;color:var(--warn)">FIRST SESSION</div>'}
+        <button class="btn ghost sm" id="editTmplBtn" style="font-size:10px">✏ EDIT TEMPLATE</button>
+      </div>
     </div>
     ${lastSameDay?`<div class="note ok" style="margin-bottom:12px">Weights pre-filled from your last ${tmpl.label} session. Adjust anything that changed.</div>`:'<div class="note" style="margin-bottom:12px">Template weights loaded. Update after your session.</div>'}
     <div id="exFormList">${exForms}</div>
@@ -612,10 +735,22 @@ function renderWorkoutForm(tmpl, lastSameDay, selectedDay){
       <textarea id="sessNotes" rows="2" placeholder="Energy level, how it felt, soreness…" style="resize:vertical"></textarea>
     </div>
     <div style="display:flex;gap:8px;flex-wrap:wrap">
-      <button class="btn" onclick="saveWorkout()">💾 SAVE & SYNC</button>
-      <button class="btn ghost sm" onclick="renderWorkout()">↺ AUTO-DETECT DAY</button>
+      <button class="btn" id="saveWkBtn">💾 SAVE & SYNC</button>
+      <button class="btn ghost sm" id="autoDetectBtn">↺ AUTO-DETECT DAY</button>
     </div>
   </div>`;
+
+  // Wire all buttons via addEventListener (no inline onclick)
+  TEMPLATES.forEach(t=>{
+    document.getElementById('daybtn_'+t.cycleDay)
+      ?.addEventListener('click',()=>renderWorkoutForDay(t.cycleDay));
+  });
+  document.getElementById('editTmplBtn')
+    ?.addEventListener('click',()=>openTemplateEditor(selectedDay));
+  document.getElementById('saveWkBtn')
+    ?.addEventListener('click',saveWorkout);
+  document.getElementById('autoDetectBtn')
+    ?.addEventListener('click',renderWorkout);
 }
 
 window.sv=function(ei,si,k,v){if(activeSession?.exercises[ei])activeSession.exercises[ei].sets[si][k]=+v||v;};
@@ -809,6 +944,7 @@ const PAK_FOODS={
     {n:'Nihari (1 bowl)',cal:380,p:34,c:12,f:22},{n:'Haleem (1 bowl)',cal:300,p:22,c:28,f:10},
     {n:'Saag (1 cup)',cal:120,p:6,c:14,f:5},{n:'Aloo Gosht',cal:340,p:26,c:22,f:16},
     {n:'White Rice (1 cup)',cal:200,p:4,c:45,f:0},{n:'Raita (½ cup)',cal:60,p:3,c:5,f:3},
+    {n:'Chapli Kabab (1)',cal:165,p:13,c:4,f:11},{n:'Seekh Kabab (2)',cal:180,p:18,c:3,f:11},
   ],
   'Snacks':[
     {n:'Samosa (1)',cal:160,p:4,c:20,f:8},{n:'Pakora (3)',cal:180,p:5,c:22,f:9},
@@ -816,10 +952,72 @@ const PAK_FOODS={
     {n:'Banana',cal:90,p:1,c:23,f:0},{n:'Dates (3)',cal:70,p:1,c:18,f:0},
   ]
 };
+
 let activeFoodCat='Breakfast';
 let dietLog=[];
-function loadDietLog(){dietLog=JSON.parse(ls.get('fos_diet_'+currentUID+'_'+TODAY)||'[]');}
-function saveDietLogLocal(){ls.set('fos_diet_'+currentUID+'_'+TODAY,JSON.stringify(dietLog));}
+function loadDietLog(){dietLog=JSON.parse(ls.get('diet_'+currentUID+'_'+TODAY)||'[]');}
+function saveDietLogLocal(){ls.set('diet_'+currentUID+'_'+TODAY,JSON.stringify(dietLog));}
+
+function addFoodToLog(food){
+  loadDietLog();
+  dietLog.push({...food});
+  saveDietLogLocal();
+  renderNutrition();
+}
+
+// AI Food Search via Anthropic API
+window.searchFood=async function(){
+  const query=(document.getElementById('foodSearchInput')?.value||'').trim();
+  if(!query)return;
+  const btn=document.getElementById('foodSearchBtn');
+  const resultEl=document.getElementById('foodSearchResult');
+  if(btn)btn.disabled=true;
+  resultEl.innerHTML=`<div class="ai-thinking">Looking up "${query}"…</div>`;
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:300,
+        system:`You are a nutrition database. When given a food name, return ONLY a JSON object with these exact keys: n (food name with portion size), cal (calories as integer), p (protein grams as integer), c (carbs grams as integer), f (fat grams as integer). Use standard Pakistani/South Asian portion sizes where relevant. Return nothing else — no explanation, no markdown, just the raw JSON object.`,
+        messages:[{role:'user',content:`Nutrition info for: ${query}`}]
+      })
+    });
+    const data=await resp.json();
+    const text=data.content?.[0]?.text||'';
+    const clean=text.replace(/```json|```/g,'').trim();
+    const food=JSON.parse(clean);
+    if(!food.n||!food.cal)throw new Error('Invalid');
+    resultEl.innerHTML=`
+    <div style="background:var(--panel2);border:1px solid var(--accent);border-radius:var(--radius);padding:12px;margin-top:8px">
+      <div style="font-size:13px;color:var(--ink);font-weight:700;margin-bottom:8px">${food.n}</div>
+      <div class="grid" style="margin-bottom:10px">
+        <div class="stat" style="padding:8px"><div class="lab">Calories</div><div class="val good" style="font-size:16px">${food.cal}</div></div>
+        <div class="stat" style="padding:8px"><div class="lab">Protein</div><div class="val" style="font-size:16px">${food.p}g</div></div>
+        <div class="stat" style="padding:8px"><div class="lab">Carbs</div><div class="val mid" style="font-size:16px">${food.c}g</div></div>
+        <div class="stat" style="padding:8px"><div class="lab">Fat</div><div class="val" style="font-size:16px">${food.f}g</div></div>
+      </div>
+      <div style="display:flex;gap:7px;flex-wrap:wrap">
+        <button class="btn" onclick="addFoodToLog(${JSON.stringify(food).replace(/"/g,'&quot;')})">+ ADD TO LOG</button>
+        <button class="btn ghost sm" onclick="editSearchResult(${JSON.stringify(food).replace(/"/g,'&quot;')})">EDIT BEFORE ADDING</button>
+      </div>
+    </div>`;
+  }catch(e){
+    resultEl.innerHTML=`<div class="note">Could not find "${query}". Try the quick-add list or add manually below.</div>`;
+  }
+  if(btn)btn.disabled=false;
+};
+
+window.editSearchResult=function(food){
+  document.getElementById('cf_n').value=food.n||'';
+  document.getElementById('cf_cal').value=food.cal||'';
+  document.getElementById('cf_p').value=food.p||'';
+  document.getElementById('cf_c').value=food.c||'';
+  document.getElementById('cf_f').value=food.f||'';
+  document.getElementById('foodSearchResult').innerHTML='<div class="note ok">Fields filled below — adjust and add.</div>';
+  document.getElementById('cf_n').scrollIntoView({behavior:'smooth'});
+};
 
 async function renderNutrition(){
   loadDietLog();
@@ -829,21 +1027,38 @@ async function renderNutrition(){
   const wKg=+(wLbs*0.453592).toFixed(1);
   const protTarget=wKg?Math.round(wKg*1.8):130;
   const calTarget=2000;
-  const totals=dietLog.reduce((acc,item)=>({cal:acc.cal+(item.cal||0),p:acc.p+(item.p||0),c:acc.c+(item.c||0),f:acc.f+(item.f||0)}),{cal:0,p:0,c:0,f:0});
+  const totals=dietLog.reduce((acc,item)=>({
+    cal:acc.cal+(+item.cal||0),p:acc.p+(+item.p||0),
+    c:acc.c+(+item.c||0),f:acc.f+(+item.f||0)
+  }),{cal:0,p:0,c:0,f:0});
   const calPct=Math.min(110,Math.round(totals.cal/calTarget*100));
   const protPct=Math.min(100,Math.round(totals.p/protTarget*100));
   const macroKcal=(totals.p*4)+(totals.c*4)+(totals.f*9)||1;
   const el=document.getElementById('view-nutrition');
-  const catBtns=Object.keys(PAK_FOODS).map(c=>`<button class="cat-btn${c===activeFoodCat?' active':''}" onclick="setFoodCat('${c}')">${c}</button>`).join('');
-  const foodChips=(PAK_FOODS[activeFoodCat]||[]).map((f,i)=>`<div class="food-chip" data-fi="${i}">+ ${f.n} <span style="color:var(--faint)">${f.cal}kcal</span></div>`).join('');
-  const logRows=dietLog.length?dietLog.map((item,i)=>`<div class="log-entry">
-    <div><div style="color:var(--ink)">${item.n}</div><div style="color:var(--faint)">${item.cal}kcal · P:${item.p}g · C:${item.c}g · F:${item.f}g</div></div>
-    <button class="log-rm" onclick="rmFood(${i})">×</button>
-  </div>`).join(''):'<p style="color:var(--faint);font-size:11px">Nothing logged today yet.</p>';
+
+  const catBtns=Object.keys(PAK_FOODS).map(c=>
+    `<button class="cat-btn${c===activeFoodCat?' active':''}" id="catbtn_${c.replace('/','_')}">${c}</button>`
+  ).join('');
+
+  const foodChips=(PAK_FOODS[activeFoodCat]||[]).map((f,i)=>
+    `<div class="food-chip" id="chip_${i}">+ ${f.n} <span style="color:var(--faint)">${f.cal}kcal</span></div>`
+  ).join('');
+
+  const logRows=dietLog.length
+    ?dietLog.map((item,i)=>`
+    <div class="log-entry">
+      <div>
+        <div style="color:var(--ink)">${item.n}</div>
+        <div style="color:var(--faint)">${item.cal}kcal · P:${item.p}g · C:${item.c}g · F:${item.f}g</div>
+      </div>
+      <button class="log-rm" id="rmfood_${i}">×</button>
+    </div>`).join('')
+    :'<p style="color:var(--faint);font-size:11px">Nothing logged today yet. Search or tap a food below.</p>';
 
   el.innerHTML=`
-  <div class="panel"><h2>TODAY'S NUTRITION — ${getUser().name.toUpperCase()}</h2>
-    <div class="grid" style="margin-bottom:12px">
+  <div class="panel">
+    <h2>TODAY'S NUTRITION — ${getUser().name.toUpperCase()}</h2>
+    <div class="grid" style="margin-bottom:10px">
       <div class="stat"><div class="lab">Calories</div><div class="val ${calPct>105?'low':calPct>85?'good':'mid'}">${totals.cal}<small style="font-size:10px"> / ${calTarget}</small></div></div>
       <div class="stat"><div class="lab">Protein</div><div class="val ${protPct>=90?'good':protPct>=60?'mid':'low'}">${totals.p}g<small style="font-size:10px"> / ${protTarget}g</small></div></div>
       <div class="stat"><div class="lab">Carbs</div><div class="val mid">${totals.c}g</div></div>
@@ -858,42 +1073,80 @@ async function renderNutrition(){
       <div class="mc" style="width:${Math.round(totals.c*4/macroKcal*100)}%"></div>
       <div class="mf" style="width:${Math.round(totals.f*9/macroKcal*100)}%"></div>
     </div>
-    <div style="display:flex;gap:12px;font-size:10px;color:var(--faint);margin-bottom:8px">
-      <span><span style="color:var(--accent)">■</span> Protein</span><span><span style="color:var(--warn)">■</span> Carbs</span><span><span style="color:var(--bad)">■</span> Fat</span>
+    <div style="display:flex;gap:12px;font-size:10px;color:var(--faint);margin-bottom:6px">
+      <span><span style="color:var(--accent)">■</span> Protein</span>
+      <span><span style="color:var(--warn)">■</span> Carbs</span>
+      <span><span style="color:var(--bad)">■</span> Fat</span>
     </div>
-    ${totals.p<protTarget*0.75?`<div class="note">⚠ Protein low — target ${protTarget}g for muscle maintenance at your current weight.</div>`:''}
+    ${totals.p<protTarget*0.75?`<div class="note">⚠ Protein low — target ${protTarget}g for muscle maintenance.</div>`:''}
   </div>
-  <div class="panel"><h2>FOOD LOG</h2><div id="dietLogEl">${logRows}</div></div>
-  <div class="panel"><h2>ADD PAKISTANI FOOD</h2>
-    <div style="margin-bottom:10px">${catBtns}</div>
-    <div style="margin-bottom:12px" id="foodChipArea">${foodChips}</div>
-    <h3>CUSTOM ITEM</h3>
-    <div class="grid3" style="margin-bottom:9px">
-      <div class="stat"><div class="lab">Name</div><input type="text" id="cf_n" placeholder="e.g. Dahi rice"></div>
-      <div class="stat"><div class="lab">Calories</div><input type="number" id="cf_cal" placeholder="300"></div>
-      <div class="stat"><div class="lab">Protein (g)</div><input type="number" id="cf_p" placeholder="15"></div>
-      <div class="stat"><div class="lab">Carbs (g)</div><input type="number" id="cf_c" placeholder="40"></div>
-      <div class="stat"><div class="lab">Fat (g)</div><input type="number" id="cf_f" placeholder="8"></div>
+
+  <div class="panel">
+    <h2>FOOD LOG</h2>
+    <div id="dietLogEl">${logRows}</div>
+  </div>
+
+  <div class="panel">
+    <h2>🔍 AI FOOD SEARCH</h2>
+    <p style="margin-bottom:10px">Type any food — Pakistani or otherwise — and AI will look up its macros instantly.</p>
+    <div style="display:flex;gap:7px;align-items:flex-start">
+      <div style="flex:1"><input type="text" id="foodSearchInput" placeholder="e.g. Chapli Kabab, Daal Makhani, Chicken Tikka…"
+        style="margin-top:0" onkeydown="if(event.key==='Enter')searchFood()"></div>
+      <button class="btn" id="foodSearchBtn" onclick="searchFood()">SEARCH</button>
     </div>
-    <button class="btn" onclick="addCustomFood()">ADD TO LOG</button>
+    <div id="foodSearchResult"></div>
+  </div>
+
+  <div class="panel">
+    <h2>QUICK ADD — PAKISTANI FOODS</h2>
+    <div style="margin-bottom:10px" id="catBtnArea">${catBtns}</div>
+    <div style="flex-wrap:wrap;display:flex" id="foodChipArea">${foodChips}</div>
+  </div>
+
+  <div class="panel">
+    <h2>ADD MANUALLY</h2>
+    <div class="grid3" style="margin-bottom:9px">
+      <div class="stat"><div class="lab">Food name</div><input type="text" id="cf_n" placeholder="e.g. Chapli Kabab"></div>
+      <div class="stat"><div class="lab">Calories</div><input type="number" id="cf_cal" placeholder="165"></div>
+      <div class="stat"><div class="lab">Protein (g)</div><input type="number" id="cf_p" placeholder="13"></div>
+      <div class="stat"><div class="lab">Carbs (g)</div><input type="number" id="cf_c" placeholder="4"></div>
+      <div class="stat"><div class="lab">Fat (g)</div><input type="number" id="cf_f" placeholder="11"></div>
+    </div>
+    <button class="btn" id="manualAddBtn">ADD TO LOG</button>
+    <div id="cfErr" style="color:var(--bad);font-size:11px;margin-top:5px"></div>
   </div>`;
-  // attach chip events
-  document.querySelectorAll('.food-chip[data-fi]').forEach(chip=>{
-    chip.addEventListener('click',()=>{
-      const f=PAK_FOODS[activeFoodCat][+chip.dataset.fi];
-      dietLog.push({...f});saveDietLogLocal();renderNutrition();
+
+  // ── Attach all events after render ────────────────────────────────────────
+  // Category buttons
+  Object.keys(PAK_FOODS).forEach(c=>{
+    const btn=document.getElementById('catbtn_'+c.replace('/','_'));
+    if(btn)btn.addEventListener('click',()=>{activeFoodCat=c;renderNutrition();});
+  });
+  // Food chips
+  (PAK_FOODS[activeFoodCat]||[]).forEach((f,i)=>{
+    const chip=document.getElementById('chip_'+i);
+    if(chip)chip.addEventListener('click',()=>addFoodToLog(f));
+  });
+  // Remove food buttons
+  dietLog.forEach((_,i)=>{
+    const btn=document.getElementById('rmfood_'+i);
+    if(btn)btn.addEventListener('click',()=>{
+      loadDietLog();dietLog.splice(i,1);saveDietLogLocal();renderNutrition();
+    });
+  });
+  // Manual add button
+  const manBtn=document.getElementById('manualAddBtn');
+  if(manBtn)manBtn.addEventListener('click',()=>{
+    const n=(document.getElementById('cf_n')?.value||'').trim();
+    const cal=+document.getElementById('cf_cal')?.value||0;
+    if(!n||!cal){document.getElementById('cfErr').textContent='Enter at least name and calories.';return;}
+    addFoodToLog({n,cal,
+      p:+document.getElementById('cf_p')?.value||0,
+      c:+document.getElementById('cf_c')?.value||0,
+      f:+document.getElementById('cf_f')?.value||0
     });
   });
 }
-window.setFoodCat=function(cat){activeFoodCat=cat;renderNutrition();};
-window.rmFood=function(i){loadDietLog();dietLog.splice(i,1);saveDietLogLocal();renderNutrition();};
-window.addCustomFood=function(){
-  const n=(document.getElementById('cf_n')?.value||'').trim();
-  const cal=+document.getElementById('cf_cal')?.value||0;
-  if(!n||!cal){alert('Enter at least name and calories.');return;}
-  dietLog.push({n,cal,p:+document.getElementById('cf_p')?.value||0,c:+document.getElementById('cf_c')?.value||0,f:+document.getElementById('cf_f')?.value||0});
-  saveDietLogLocal();renderNutrition();
-};
 
 // ── SLEEP ─────────────────────────────────────────────────────────────────────
 async function renderSleep(){
