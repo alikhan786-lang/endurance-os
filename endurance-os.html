@@ -393,192 +393,261 @@ window.delUser=async function(e,id){
 };
 window.switchUser=function(){currentUID=null;renderUserScreen();};
 
-// ── EXERCISES ─────────────────────────────────────────────────────────────────
-const EX={
-  'CARDIO':{icon:'🏃',exs:[
-    {code:'C1',name:'Treadmill Walk',type:'duration',cue:'Upright posture, heel-to-toe stride. Incline 3–8% for fat burn without joint stress.'},
-    {code:'C2',name:'Treadmill Run',type:'duration',cue:'Land midfoot, slight forward lean, cadence ~170spm. Breathe rhythmically.'},
-    {code:'C3',name:'Cycling / Spin',type:'duration',cue:'Seat at hip height, slight knee bend at bottom, push through heel, core engaged.'},
-    {code:'C4',name:'Rowing Machine',type:'duration',cue:'Legs 60%, back 20%, arms 20%. Drive legs first, lean back, pull to lower chest.'},
-    {code:'C5',name:'Elliptical',type:'duration',cue:'Full foot contact, slight forward lean, vary resistance for intensity.'},
-    {code:'C6',name:'HIIT',type:'duration',cue:'30–40s max effort / 20–30s rest. RPE 8–9/10 on work intervals.'},
-    {code:'C7',name:'Jump Rope',type:'duration',cue:'Land on balls of feet, 1–2 inch clearance, elbows close to sides.'},
-  ]},
-  'BACK & BICEPS':{icon:'🔵',exs:[
-    {code:'BB1',name:'Lat Pulldown (Front)',type:'sets',cue:'Lean back 10–15°, pull bar to upper chest, squeeze lats. Control the return.'},
-    {code:'BB2',name:'Lat Pulldown (Behind Head)',type:'sets',cue:'Torso upright, pull to base of skull. Lighter weight — cervical risk at heavy loads.'},
-    {code:'BB3',name:'Seated Cable Row',type:'sets',cue:'Neutral spine, pull to lower chest, elbows drive back. Pause and squeeze. Slow eccentric.'},
-    {code:'BB4',name:'One-Arm Dumbbell Row',type:'sets',cue:'Back flat and parallel, pull DB to hip, elbow skims body. No rotation.'},
-    {code:'BB5',name:'Face Pull',type:'sets',cue:'Cable at eye height, pull to face, elbows high and flared, external rotation at end. Light, high reps.'},
-    {code:'BB6',name:'Standing Single-Arm Cable Row',type:'sets',cue:'Stand sideways to cable, slight hip hinge, pull to hip. Good for unilateral balance.'},
-    {code:'BB7',name:'Barbell Bicep Curl',type:'sets',cue:'Elbows pinned to sides, no swinging. Slow 3-sec eccentric. Supinate at top.'},
-    {code:'BB8',name:'Dumbbell Hammer Curl',type:'sets',cue:'Neutral grip (thumbs up). Keeps brachialis and brachioradialis engaged.'},
-    {code:'BB9',name:'Concentration Curl',type:'sets',cue:'Elbow on inner thigh. Maximises bicep peak. Full range only.'},
-    {code:'BB10',name:'Cable Bicep Curl',type:'sets',cue:'Constant tension throughout ROM — superior for peak contraction. Slow and controlled.'},
-  ]},
-  'CHEST & TRICEPS':{icon:'🔴',exs:[
-    {code:'CT1',name:'Bench Press',type:'sets',cue:'Retract scapula, arch slightly, feet flat. Bar to lower chest, elbows 45–75° from torso.'},
-    {code:'CT2',name:'Incline Dumbbell Press',type:'sets',cue:'30–45° bench, press up and slightly inward. Stretch at bottom, squeeze at top.'},
-    {code:'CT3',name:'Cable Fly',type:'sets',cue:'Slight elbow bend, hugging arc to chest height. Chest does the work — not arms.'},
-    {code:'CT4',name:'Tricep Pushdown',type:'sets',cue:'Elbows pinned to sides, full extension at bottom. Upper arms must not move.'},
-    {code:'CT5',name:'Skull Crushers',type:'sets',cue:'Lower bar to forehead bending only at elbow. Press back to lockout.'},
-    {code:'CT6',name:'Dips',type:'sets',cue:'Forward lean for chest, upright for triceps. Full depth, lock out at top.'},
-  ]},
-  'SHOULDERS':{icon:'🟡',exs:[
-    {code:'SH1',name:'Overhead Press',type:'sets',cue:'Press to full lockout, bar passes face in straight line. Core braced throughout.'},
-    {code:'SH2',name:'Lateral Raise',type:'sets',cue:'Slight elbow bend, raise to shoulder height. Lead with elbow, not wrist.'},
-    {code:'SH3',name:'Front Raise',type:'sets',cue:'Raise to eye level, slight elbow bend. Avoid body sway.'},
-    {code:'SH4',name:'Arnold Press',type:'sets',cue:'Start palms facing you, rotate away as you press. Hits all three deltoid heads.'},
-    {code:'SH5',name:'Reverse Fly',type:'sets',cue:'Bent over 45°, raise DBs to sides. Rear delts and rhomboids. No momentum.'},
-  ]},
-  'LEGS':{icon:'🟢',exs:[
-    {code:'LG1',name:'Squat',type:'sets',cue:'Feet shoulder-width, toes out 15–30°. Depth to parallel or below. Drive knees out.'},
-    {code:'LG2',name:'Leg Press',type:'sets',cue:'Full depth without lower back lifting off pad. Do not lock knees at top.'},
-    {code:'LG3',name:'Romanian Deadlift',type:'sets',cue:'Hip hinge, soft knees, feel hamstring stretch. Drive hips forward to stand. Neutral back.'},
-    {code:'LG4',name:'Leg Curl',type:'sets',cue:'Curl heel to glute, pause at peak, slow release. No hips rising.'},
-    {code:'LG5',name:'Leg Extension',type:'sets',cue:'Full extension, 2-sec pause at top, slow descent. Quad isolation.'},
-    {code:'LG6',name:'Calf Raise',type:'sets',cue:'Deep stretch at bottom, up on toes at top. Full range, slow tempo.'},
-    {code:'LG7',name:'Hip Thrust',type:'sets',cue:'Upper back on bench, drive hips up, squeeze glutes at top. Pause 1 sec. Primary glute builder.'},
-  ]},
-  'CORE':{icon:'🟠',exs:[
-    {code:'A',name:'Plank',type:'duration_s',cue:'Body in straight line head to heel. Brace as if bracing for a punch. Breathe normally.'},
-    {code:'B',name:'Hanging Leg Raise',type:'sets',cue:'Dead hang, raise legs to 90°+ keeping straight. Control descent — no swinging.'},
-    {code:'C',name:'Cable Crunch',type:'sets',cue:'Kneel, round the spine downward. Keep constant tension — weight never fully releases.'},
-    {code:'D',name:'Ab Wheel',type:'sets',cue:'Roll out from knees until hips would drop, pull back using abs. One of the hardest core moves.'},
-    {code:'E',name:'Russian Twist',type:'sets',cue:'Lean back 45°, feet off ground, rotate torso. Add weight to progress.'},
-    {code:'F',name:'Dead Bug',type:'sets',cue:'Lower opposite arm + leg toward floor, return. Lower back stays pressed to floor throughout.'},
-  ]},
-  'FULL BODY':{icon:'⚫',exs:[
-    {code:'FB1',name:'Deadlift',type:'sets',cue:'Bar over mid-foot, neutral spine, big breath and brace, drive floor away. Bar stays close.'},
-    {code:'FB2',name:'Pull-Up',type:'sets',cue:'Dead hang, chin clears bar, full range each rep. Slow eccentric builds strength fastest.'},
-    {code:'FB3',name:'Barbell Row',type:'sets',cue:'Hip hinge ~45°, pull to lower chest, elbows back. No body swing.'},
-  ]},
-  'HOME / DUMBBELL':{icon:'🏠',exs:[
-    {code:'HD1',name:'DB Sumo Squat',type:'sets',cue:'Wide stance, toes out, DB hanging between legs. Deep squat, upright torso.'},
-    {code:'HD2',name:'DB Romanian Deadlift',type:'sets',cue:'Hip hinge, DBs slide down legs. Feel hamstring stretch. Neutral spine.'},
-    {code:'HD3',name:'Push-Up',type:'sets',cue:'Body in straight line, lower chest to 1 inch from floor, full lockout. Scale on knees if needed.'},
-    {code:'HD4',name:'DB Shoulder Press',type:'sets',cue:'Press to full lockout, slight inward arc at top. Core braced.'},
-    {code:'HD5',name:'Glute Bridge',type:'sets',cue:'Feet flat, drive hips up, squeeze glutes at top, hold 1 sec. Add DB on hips to progress.'},
-    {code:'HD6',name:'Jump Squats',type:'sets',cue:'Squat then explode up, land softly with bent knees. Power development.'},
-    {code:'HD7',name:'Burpees',type:'sets',cue:'Drop to plank, chest to floor, jump up, clap overhead. Full body power/cardio.'},
-    {code:'HD8',name:'Mountain Climbers',type:'duration_s',cue:'Plank position, alternate driving knees to chest fast. Core + cardio.'},
-  ]},
-  'YOGA / MOBILITY':{icon:'🧘',exs:[
-    {code:'YG1',name:'Sun Salutation',type:'sets',cue:'Flow through: mountain → forward fold → plank → cobra → downward dog. Each breath one movement.'},
-    {code:'YG2',name:'Pigeon Pose',type:'duration_s',cue:'Front shin parallel to mat, fold forward. Deep hip opener. Hold 60–90 sec per side.'},
-    {code:'YG3',name:'Hip Circles',type:'sets',cue:'Slow controlled circles with hips. 10 each direction. Loosens hip flexors and glutes.'},
-    {code:'YG4',name:'Butterfly Stretch',type:'duration_s',cue:'Soles of feet together, gently press knees toward floor. Hold 60+ sec.'},
-    {code:'YG5',name:'Child\'s Pose',type:'duration_s',cue:'Knees wide, arms extended, forehead to floor. Rest and breathe deeply.'},
-  ]}
+// ── EXERCISE LIBRARY ──────────────────────────────────────────────────────────
+const EX_LIB={
+  'C1': {name:'Treadmill Walk',      type:'duration', cue:'Upright posture, heel-to-toe. Incline 3–8% for fat burn.'},
+  'BB1':{name:'Lat Pulldown (Front)',type:'sets',     cue:'Lean back 10–15°, pull to upper chest, squeeze lats. Slow return.'},
+  'BB2':{name:'Lat Pulldown (Behind Head)',type:'sets',cue:'Torso upright, pull to base of skull. Go lighter — cervical risk.'},
+  'BB3':{name:'Seated Cable Row',    type:'sets',     cue:'Neutral spine, pull to lower chest, elbows back. Pause and squeeze.'},
+  'BB4':{name:'One-Arm Dumbbell Row',type:'sets',     cue:'Back flat, pull DB to hip, elbow skims body. No rotation.'},
+  'BB5':{name:'Face Pull',           type:'sets',     cue:'Cable at eye height, pull to face, elbows high. External rotation at end.'},
+  'BB7':{name:'Barbell Bicep Curl',  type:'sets',     cue:'Elbows pinned, no swinging. Slow 3-sec eccentric. Supinate at top.'},
+  'BB8':{name:'Dumbbell Hammer Curl',type:'sets',     cue:'Neutral grip (thumbs up). Keeps brachialis engaged.'},
+  'BB9':{name:'Concentration Curl',  type:'sets',     cue:'Elbow on inner thigh. Full range only. Max bicep peak.'},
+  'CT1':{name:'Bench Press',         type:'sets',     cue:'Retract scapula, feet flat. Bar to lower chest, elbows 45–75°.'},
+  'CT2':{name:'Incline DB Press',    type:'sets',     cue:'30–45° bench, press up and slightly inward. Stretch at bottom.'},
+  'CT3':{name:'Cable Fly',           type:'sets',     cue:'Hugging arc to chest height. Chest does the work — not arms.'},
+  'CT4':{name:'Tricep Pushdown',     type:'sets',     cue:'Elbows pinned to sides. Full extension at bottom. Upper arms still.'},
+  'CT5':{name:'Skull Crushers',      type:'sets',     cue:'Lower bar to forehead bending only at elbow. Press back to lockout.'},
+  'CT6':{name:'Dips',                type:'sets',     cue:'Forward lean for chest, upright for triceps. Full depth. Lock out at top.'},
+  'SH1':{name:'Overhead Press',      type:'sets',     cue:'Press to full lockout. Bar passes face in straight line. Core braced.'},
+  'SH2':{name:'Lateral Raise',       type:'sets',     cue:'Slight elbow bend, raise to shoulder height. Lead with elbow.'},
+  'SH3':{name:'Front Raise',         type:'sets',     cue:'Raise to eye level, slight elbow bend. No body sway.'},
+  'SH4':{name:'Arnold Press',        type:'sets',     cue:'Start palms facing you, rotate away as you press. Hits all 3 delt heads.'},
+  'SH5':{name:'Reverse Fly',         type:'sets',     cue:'Bent over 45°, raise DBs to sides. Rear delts + rhomboids. No momentum.'},
+  'LG2':{name:'Leg Press',           type:'sets',     cue:'Full depth without lower back lifting off pad. Do not lock knees at top.'},
+  'LG5':{name:'Leg Extension',       type:'sets',     cue:'Full extension, 2-sec pause at top, slow descent. Quad isolation.'},
+  'LG6':{name:'Calf Raise',          type:'sets',     cue:'Deep stretch at bottom, up on toes at top. Slow full range.'},
+  'C':  {name:'Cable Crunch',        type:'sets',     cue:'Kneel, round spine downward. Keep constant tension throughout.'},
 };
 
-// ── WORKOUT STATE ─────────────────────────────────────────────────────────────
-let activeSession={date:TODAY,name:'',exercises:[],notes:''};
-let expandedCats={CARDIO:true};
+// ── WORKOUT TEMPLATES ─────────────────────────────────────────────────────────
+// cycleDay: 1=Chest/Tri, 2=Back/Bi, 3=Shoulders/Core, 4=REST
+const TEMPLATES=[
+  {
+    cycleDay:1, label:'CHEST & TRICEPS', icon:'🔴', color:'#f87171',
+    exercises:[
+      {code:'C1',  sets:[{mins:20}]},
+      {code:'CT1', sets:[{reps:12,weight:10},{reps:10,weight:14},{reps:8,weight:22}]},
+      {code:'CT2', sets:[{reps:12,weight:10},{reps:10,weight:14},{reps:8,weight:14}]},
+      {code:'CT3', sets:[{reps:12,weight:14},{reps:10,weight:18},{reps:8,weight:22}]},
+      {code:'CT4', sets:[{reps:12,weight:18},{reps:10,weight:20},{reps:8,weight:22}]},
+      {code:'CT5', sets:[{reps:10,weight:10},{reps:8,weight:14},{reps:6,weight:18}]},
+      {code:'CT6', sets:[{reps:6,weight:0},{reps:6,weight:0},{reps:6,weight:0}]},
+    ]
+  },
+  {
+    cycleDay:2, label:'BACK & BICEPS', icon:'🔵', color:'#818cf8',
+    exercises:[
+      {code:'C1',  sets:[{mins:20}]},
+      {code:'BB1', sets:[{reps:12,weight:30},{reps:10,weight:35},{reps:8,weight:40}]},
+      {code:'BB2', sets:[{reps:12,weight:30},{reps:10,weight:35},{reps:8,weight:40}]},
+      {code:'BB3', sets:[{reps:12,weight:20},{reps:10,weight:25},{reps:8,weight:30}]},
+      {code:'BB4', sets:[{reps:12,weight:7}, {reps:10,weight:10},{reps:8,weight:12}]},
+      {code:'BB7', sets:[{reps:12,weight:10},{reps:10,weight:10},{reps:8,weight:15}]},
+      {code:'BB8', sets:[{reps:12,weight:5}, {reps:10,weight:7}, {reps:8,weight:10}]},
+      {code:'BB9', sets:[{reps:12,weight:5}, {reps:10,weight:5}, {reps:8,weight:10}]},
+    ]
+  },
+  {
+    cycleDay:3, label:'SHOULDERS & CORE', icon:'🟡', color:'#fbbf24',
+    exercises:[
+      {code:'C1',  sets:[{mins:20}]},
+      {code:'SH1', sets:[{reps:12,weight:20},{reps:10,weight:20},{reps:8,weight:22}]},
+      {code:'SH2', sets:[{reps:12,weight:10},{reps:10,weight:10},{reps:8,weight:15}]},
+      {code:'SH3', sets:[{reps:10,weight:10},{reps:8,weight:10}, {reps:6,weight:15}]},
+      {code:'SH4', sets:[{reps:10,weight:10},{reps:8,weight:15}, {reps:8,weight:20}]},
+      {code:'SH5', sets:[{reps:12,weight:20},{reps:10,weight:22},{reps:8,weight:25}]},
+      {code:'LG2', sets:[{reps:10,weight:22},{reps:10,weight:22},{reps:10,weight:22}]},
+      {code:'LG5', sets:[{reps:10,weight:12},{reps:10,weight:15},{reps:10,weight:17}]},
+      {code:'LG6', sets:[{reps:10,weight:22},{reps:10,weight:22},{reps:10,weight:22}]},
+      {code:'C',   sets:[{reps:15,weight:12},{reps:15,weight:12},{reps:15,weight:12}]},
+    ]
+  },
+  {
+    cycleDay:4, label:'REST DAY', icon:'💤', color:'var(--faint)',
+    exercises:[]
+  }
+];
 
-function renderWorkout(){
-  const u=getUser();
-  const el=document.getElementById('view-workout');
-  el.innerHTML=`
-  <div class="panel">
-    <h2>LOG WORKOUT — ${u.name.toUpperCase()}</h2>
-    <div class="grid3" style="margin-bottom:12px">
-      <div class="stat"><div class="lab">Session name</div><input type="text" id="sessName" placeholder="e.g. Back & Biceps" value="${activeSession.name}" oninput="activeSession.name=this.value" style="font-size:13px"></div>
-      <div class="stat"><div class="lab">Date</div><input type="date" id="sessDate" value="${activeSession.date}" onchange="activeSession.date=this.value"></div>
-    </div>
-    ${activeSession.exercises.length?`
-    <h3>SELECTED EXERCISES</h3>
-    <div id="selExList">${renderSelEx()}</div>
-    <div class="stat" style="margin-bottom:10px"><div class="lab">Session notes</div><textarea id="sessNotes" rows="2" placeholder="Energy level, soreness, notes…" style="resize:vertical">${activeSession.notes}</textarea></div>
-    <div style="display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px">
-      <button class="btn" onclick="saveWorkout()">💾 SAVE WORKOUT</button>
-      <button class="btn ghost sm" onclick="clearSession()">CLEAR</button>
-    </div>`:''}
-    <h3>EXERCISE MENU</h3>
-    ${Object.entries(EX).map(([cat,data])=>{
-      const open=expandedCats[cat];
-      const rows=data.exs.map(ex=>{
-        const sel=activeSession.exercises.some(e=>e.code===ex.code);
-        return `<div class="ex-row${sel?' sel':''}" onclick="toggleEx('${ex.code}','${cat}')">
-          <span class="ex-code">${ex.code}</span>
-          <span class="ex-name">${ex.name}</span>
-          <span class="ex-add">${sel?'✓':'+'}</span>
-        </div>`;
-      }).join('');
-      return `<div style="margin-bottom:5px">
-        <div class="cat-header" onclick="toggleCat('${cat}')">
-          <span style="font-size:14px">${data.icon}</span>
-          <span class="cname">${cat}</span>
-          <span style="color:var(--faint);font-size:12px">${open?'▲':'▼'}</span>
-        </div>
-        ${open?`<div class="ex-list">${rows}</div>`:''}
-      </div>`;
-    }).join('')}
-  </div>`;
+// ── WORKOUT STATE ─────────────────────────────────────────────────────────────
+let activeSession=null; // loaded from template or Firebase
+
+function calcVol(ex){
+  if(!ex.sets||!ex.sets.length)return 0;
+  if(ex.type==='duration')return ex.sets.reduce((t,s)=>t+(+s.mins||0),0);
+  return ex.sets.reduce((t,s)=>t+((+s.reps||0)*(+s.weight||0)),0);
 }
 
-function renderSelEx(){
-  return activeSession.exercises.map((ex,ei)=>{
+// Figure out next cycle day from workout history
+async function getNextCycleDay(){
+  const data=await fbGet(uk('workouts'));
+  if(!data)return 1;
+  const sessions=Object.values(data).sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+  const last=sessions[0];
+  if(!last||!last.cycleDay)return 1;
+  const next=last.cycleDay>=4?1:last.cycleDay+1;
+  return next;
+}
+
+async function renderWorkout(){
+  const el=document.getElementById('view-workout');
+  el.innerHTML=`<div class="panel"><div class="ai-thinking">Loading your next session…</div></div>`;
+  const nextDay=await getNextCycleDay();
+  const tmpl=TEMPLATES.find(t=>t.cycleDay===nextDay)||TEMPLATES[0];
+  // Load last session weights for this cycleDay to pre-fill
+  const data=await fbGet(uk('workouts'));
+  let lastSameDay=null;
+  if(data){
+    const sessions=Object.values(data)
+      .filter(s=>s.cycleDay===nextDay)
+      .sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+    lastSameDay=sessions[0]||null;
+  }
+  // Build active session from template, override weights from last same-day session
+  activeSession={
+    date:TODAY,
+    cycleDay:tmpl.cycleDay,
+    name:tmpl.label,
+    notes:'',
+    exercises: tmpl.exercises.map(te=>{
+      const exInfo=EX_LIB[te.code]||{name:te.code,type:'sets'};
+      // find same exercise from last same-day session
+      const lastEx=lastSameDay?.exercises?.find(e=>e.code===te.code);
+      const sets=(lastEx?.sets||te.sets).map(s=>({...s}));
+      return {code:te.code, name:exInfo.name, type:exInfo.type, cue:exInfo.cue, sets};
+    })
+  };
+  renderWorkoutForm(tmpl, lastSameDay);
+}
+
+function renderWorkoutForm(tmpl, lastSameDay){
+  const el=document.getElementById('view-workout');
+  const u=getUser();
+  const daysSince=lastSameDay?Math.round((Date.now()-new Date(lastSameDay.savedAt))/(1000*60*60*24)):null;
+
+  if(tmpl.cycleDay===4){
+    el.innerHTML=`
+    <div class="panel" style="text-align:center;padding:32px">
+      <div style="font-size:48px;margin-bottom:14px">💤</div>
+      <h2>REST DAY</h2>
+      <p style="margin-bottom:16px">Recovery is where the gains happen. No gym today.</p>
+      <div class="note ok">✓ Gym is busy today — smart move to skip. Sleep well, eat protein, hydrate.</div>
+      <div style="margin-top:18px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+        <button class="btn ghost sm" onclick="skipToNext()">SKIP → NEXT CYCLE DAY</button>
+        <button class="btn ghost sm" onclick="show('coach');renderCoach()">ASK AI COACH</button>
+      </div>
+    </div>
+    ${renderCycleStatus(tmpl.cycleDay)}`;
+    return;
+  }
+
+  const exForms=activeSession.exercises.map((ex,ei)=>{
+    const isCardio=ex.type==='duration';
     const setsHTML=ex.sets.map((s,si)=>{
-      if(ex.type==='sets') return `<div class="set-row">
-        <span class="set-label">SET ${si+1}</span>
-        <input type="number" placeholder="reps" value="${s.reps||''}" style="max-width:65px" oninput="sv(${ei},${si},'reps',this.value)">
+      if(isCardio) return `<div class="set-row">
+        <span class="set-label">DURATION</span>
+        <input type="number" value="${s.mins||''}" style="max-width:70px" oninput="sv(${ei},${si},'mins',this.value)">
+        <span class="set-label">MINS</span>
+      </div>`;
+      const isDips=ex.code==='CT6';
+      return `<div class="set-row">
+        <span class="set-label" style="min-width:38px">S${si+1}</span>
+        <input type="number" placeholder="reps" value="${s.reps||''}" style="max-width:58px" oninput="sv(${ei},${si},'reps',this.value)">
         <span class="set-label">×</span>
-        <input type="number" placeholder="lbs" value="${s.weight||''}" style="max-width:70px" oninput="sv(${ei},${si},'weight',this.value)">
+        <input type="number" placeholder="${isDips?'BW':''}" value="${isDips&&!s.weight?'':s.weight||''}" style="max-width:65px" oninput="sv(${ei},${si},'weight',this.value)">
         <span class="set-label">LBS</span>
         <button class="rm-btn" onclick="rmSet(${ei},${si})">−</button>
       </div>`;
-      if(ex.type==='duration') return `<div class="set-row">
-        <input type="number" placeholder="mins" value="${s.mins||''}" style="max-width:70px" oninput="sv(${ei},${si},'mins',this.value)">
-        <span class="set-label">MINUTES</span>
-      </div>`;
-      return `<div class="set-row">
-        <input type="number" placeholder="secs" value="${s.secs||''}" style="max-width:70px" oninput="sv(${ei},${si},'secs',this.value)">
-        <span class="set-label">SECONDS</span>
-      </div>`;
     }).join('');
     return `<div class="sel-ex">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
-        <div class="sel-ex-name">${ex.code} — ${ex.name}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span class="ex-code" style="font-size:10px;color:var(--faint)">${ex.code}</span>
+          <span class="sel-ex-name" style="margin-bottom:0">${ex.name}</span>
+        </div>
         <button class="rm-btn" onclick="rmEx(${ei})">×</button>
       </div>
-      <div class="note" style="margin-bottom:7px;font-size:11px"><b style="color:var(--warn)">FORM:</b> ${ex.cue}</div>
+      <div class="note" style="margin-bottom:7px;font-size:11px;padding:6px 10px"><b style="color:var(--warn)">FORM:</b> ${ex.cue}</div>
       ${setsHTML}
-      ${ex.type==='sets'?`<button class="btn sm ghost" style="margin-top:5px" onclick="addSet(${ei})">+ SET</button>`:''}
+      ${!isCardio?`<button class="btn sm ghost" style="margin-top:5px" onclick="addSet(${ei})">+ SET</button>`:''}
     </div>`;
   }).join('');
+
+  el.innerHTML=`
+  ${renderCycleStatus(tmpl.cycleDay)}
+  <div class="panel">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+      <span style="font-size:22px">${tmpl.icon}</span>
+      <div>
+        <h2 style="margin-bottom:2px;color:${tmpl.color}">${tmpl.label}</h2>
+        <div style="font-size:10px;color:var(--faint)">${u.name.toUpperCase()} · ${new Date().toDateString().toUpperCase()}</div>
+      </div>
+      ${lastSameDay?`<div style="margin-left:auto;text-align:right;font-size:10px;color:var(--faint)">LAST: ${daysSince}d ago<br>${new Date(lastSameDay.date+'T12:00:00').toLocaleDateString('en-GB',{day:'numeric',month:'short'})}</div>`:'<div style="margin-left:auto;font-size:10px;color:var(--warn)">FIRST SESSION</div>'}
+    </div>
+    ${lastSameDay?`<div class="note ok" style="margin-bottom:12px">Weights pre-filled from your last ${tmpl.label} session. Adjust anything that changed.</div>`:'<div class="note" style="margin-bottom:12px">Template weights loaded. Update after your session.</div>'}
+    <div id="exFormList">${exForms}</div>
+    <div style="margin:12px 0">
+      <div class="lab" style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:4px">SESSION NOTES</div>
+      <textarea id="sessNotes" rows="2" placeholder="Energy level, how it felt, soreness…" style="resize:vertical"></textarea>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn" onclick="saveWorkout()">💾 SAVE & SYNC</button>
+      <button class="btn ghost sm" onclick="renderWorkout()">↺ RELOAD</button>
+    </div>
+  </div>`;
 }
 
-window.toggleCat=function(cat){expandedCats[cat]=!expandedCats[cat];renderWorkout();};
-window.toggleEx=function(code,cat){
-  const ex=EX[cat].exs.find(e=>e.code===code);
-  const idx=activeSession.exercises.findIndex(e=>e.code===code);
-  if(idx>-1){activeSession.exercises.splice(idx,1);}
-  else{
-    const entry={code,name:ex.name,type:ex.type,cue:ex.cue,sets:[]};
-    if(ex.type==='sets')entry.sets=[{reps:'',weight:''}];
-    else if(ex.type==='duration')entry.sets=[{mins:''}];
-    else entry.sets=[{secs:''}];
-    activeSession.exercises.push(entry);
-  }
-  renderWorkout();
-};
-window.sv=function(ei,si,k,v){activeSession.exercises[ei].sets[si][k]=v;};
-window.addSet=function(ei){activeSession.exercises[ei].sets.push({reps:'',weight:''});renderWorkout();};
+function renderCycleStatus(currentDay){
+  const days=TEMPLATES.map(t=>{
+    const active=t.cycleDay===currentDay;
+    const color=active?t.color:'var(--faint)';
+    return `<div style="flex:1;text-align:center;padding:9px 6px;background:${active?'var(--panel2)':'transparent'};border:1px solid ${active?'var(--line)':'transparent'};border-radius:var(--radius)">
+      <div style="font-size:16px">${t.icon}</div>
+      <div style="font-size:9px;color:${color};letter-spacing:1px;margin-top:3px;font-weight:${active?700:400}">${t.cycleDay===4?'REST':t.label.split(' ')[0]}</div>
+      ${active?`<div style="width:6px;height:6px;border-radius:50%;background:var(--accent);margin:4px auto 0"></div>`:''}
+    </div>`;
+  }).join('');
+  return `<div class="panel" style="padding:12px;margin-bottom:10px">
+    <div style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:8px">CYCLE POSITION</div>
+    <div style="display:flex;gap:4px">${days}</div>
+  </div>`;
+}
+
+window.sv=function(ei,si,k,v){if(activeSession?.exercises[ei])activeSession.exercises[ei].sets[si][k]=+v||v;};
+window.addSet=function(ei){activeSession.exercises[ei].sets.push({reps:'',weight:''});const el=document.getElementById('exFormList');if(el)el.innerHTML=activeSession.exercises.map((_,i)=>i).reduce((h,i)=>h,renderExForms());renderWorkout();};
 window.rmSet=function(ei,si){activeSession.exercises[ei].sets.splice(si,1);renderWorkout();};
 window.rmEx=function(ei){activeSession.exercises.splice(ei,1);renderWorkout();};
-window.clearSession=function(){activeSession={date:TODAY,name:'',exercises:[],notes:''};renderWorkout();};
-
-function calcVol(ex){
-  if(ex.type==='sets')return ex.sets.reduce((t,s)=>t+((+s.reps||0)*(+s.weight||0)),0);
-  if(ex.type==='duration')return ex.sets.reduce((t,s)=>t+(+s.mins||0),0);
-  return ex.sets.reduce((t,s)=>t+(+s.secs||0),0);
-}
+window.skipToNext=async function(){
+  // Advance cycle without saving a workout
+  const cur=activeSession?.cycleDay||4;
+  const nextDay=cur>=4?1:cur+1;
+  const tmpl=TEMPLATES.find(t=>t.cycleDay===nextDay)||TEMPLATES[0];
+  activeSession={date:TODAY,cycleDay:tmpl.cycleDay,name:tmpl.label,notes:'',
+    exercises:tmpl.exercises.map(te=>{
+      const exInfo=EX_LIB[te.code]||{name:te.code,type:'sets'};
+      return {code:te.code,name:exInfo.name,type:exInfo.type,cue:exInfo.cue,sets:te.sets.map(s=>({...s}))};
+    })
+  };
+  renderWorkoutForm(tmpl,null);
+};
 
 window.saveWorkout=async function(){
-  const name=document.getElementById('sessName')?.value||activeSession.name||'Workout';
-  const notes=document.getElementById('sessNotes')?.value||'';
-  activeSession.name=name;activeSession.notes=notes;
+  if(!activeSession||activeSession.cycleDay===4)return;
+  activeSession.notes=document.getElementById('sessNotes')?.value||'';
+  // sync any edited values from inputs
+  document.querySelectorAll('.sel-ex').forEach((block,ei)=>{
+    if(!activeSession.exercises[ei])return;
+    block.querySelectorAll('.set-row').forEach((row,si)=>{
+      const inputs=row.querySelectorAll('input');
+      if(activeSession.exercises[ei].type==='duration'){
+        if(inputs[0])activeSession.exercises[ei].sets[si]={mins:+inputs[0].value||0};
+      } else {
+        if(inputs[0])activeSession.exercises[ei].sets[si].reps=+inputs[0].value||0;
+        if(inputs[1])activeSession.exercises[ei].sets[si].weight=+inputs[1].value||0;
+      }
+    });
+  });
   // PR check
   const prs=(await fbGet(uk('prs')))||{};
   let newPRs=[];
@@ -589,20 +658,53 @@ window.saveWorkout=async function(){
     }
   });
   if(newPRs.length)await fbSet(uk('prs'),prs);
+  // Auto-update template weights for next same-day session (progressive overload)
+  // (user can override — these just seed the next session's pre-fill)
   const session={...activeSession,savedAt:new Date().toISOString(),newPRs,user:getUser().name};
   await fbPush(uk('workouts'),session);
-  activeSession={date:TODAY,name:'',exercises:[],notes:''};
+  // Show confirmation + instant AI comparison
   const el=document.getElementById('view-workout');
-  el.innerHTML=`<div class="panel">
-    <h2>✓ WORKOUT SAVED & SYNCED</h2>
-    <p>Session logged for ${new Date(session.date+'T12:00:00').toDateString()}.</p>
-    ${newPRs.length?`<div class="note ok" style="margin-top:10px">🏆 NEW PR! ${newPRs.join(' · ')}</div>`:''}
-    <div style="display:flex;gap:7px;margin-top:12px;flex-wrap:wrap">
-      <button class="btn" onclick="renderWorkout()">LOG ANOTHER</button>
-      <button class="btn ghost sm" onclick="show('history');renderHistory()">VIEW HISTORY</button>
-      <button class="btn ghost sm" onclick="show('coach');renderCoach()">AI COACH INSIGHTS</button>
+  const totalVol=activeSession.exercises.filter(e=>e.type==='sets').reduce((t,e)=>t+calcVol(e),0);
+  el.innerHTML=`
+  <div class="panel">
+    <h2>✓ SESSION SAVED & SYNCED</h2>
+    <div class="grid" style="margin-bottom:12px">
+      <div class="stat"><div class="lab">Cycle Day</div><div class="val">${activeSession.cycleDay}</div></div>
+      <div class="stat"><div class="lab">Session</div><div class="val" style="font-size:13px">${activeSession.name}</div></div>
+      <div class="stat"><div class="lab">Total Volume</div><div class="val good">${totalVol.toLocaleString()} <small style="font-size:10px">lbs</small></div></div>
     </div>
+    ${newPRs.length?`<div class="note ok">🏆 NEW PR! ${newPRs.join(' · ')}</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+      <button class="btn" onclick="renderWorkout()">NEXT SESSION</button>
+      <button class="btn ghost sm" onclick="getSessionComparison()">📊 AI COMPARISON</button>
+      <button class="btn ghost sm" onclick="show('history');renderHistory()">HISTORY</button>
+    </div>
+    <div id="comparisonEl" style="margin-top:12px"></div>
   </div>`;
+  activeSession=null;
+};
+
+window.getSessionComparison=async function(){
+  const el=document.getElementById('comparisonEl');
+  if(!el)return;
+  el.innerHTML=`<div class="ai-thinking">Analysing vs your last session…</div>`;
+  const data=await fbGet(uk('workouts'));
+  if(!data){el.innerHTML='<p style="color:var(--faint)">No history to compare yet.</p>';return;}
+  const sessions=Object.values(data).sort((a,b)=>new Date(b.savedAt)-new Date(a.savedAt));
+  const lastTwo=sessions.slice(0,2);
+  try{
+    const resp=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',max_tokens:600,
+        system:`You are a gym coach. Compare two workout sessions and give 3–4 specific bullet points. Be direct and numerical. Format: use • bullets, ALL CAPS for headers, no markdown.`,
+        messages:[{role:'user',content:`Compare these two sessions for ${getUser().name}:\n\nMOST RECENT:\n${JSON.stringify(lastTwo[0],null,2)}\n\nPREVIOUS:\n${JSON.stringify(lastTwo[1],null,2)}\n\nGive: volume comparison, exercises where weight increased/decreased, one specific recommendation for next session.`}]
+      })
+    });
+    const d=await resp.json();
+    const text=d.content?.[0]?.text||'Could not analyse.';
+    el.innerHTML=`<div class="ai-label">SESSION COMPARISON</div><div class="ai-bubble">${text.replace(/</g,'&lt;')}</div>`;
+  }catch(e){el.innerHTML=`<div class="note">Could not reach AI. Check connection.</div>`;}
 };
 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
@@ -911,30 +1013,27 @@ window.askCoach=async function(){
 
   const u=getUser();
 
-  const systemPrompt=`You are a personal fitness coach and performance analyst embedded inside the ENDURANCE_OS app. You are coaching ${u.name} (${u.gender==='F'?'female':'male'}).
+  const systemPrompt=`You are a personal gym coach for ${u.name} (${u.gender==='F'?'female':'male'}). They follow a 4-day repeating cycle: Day 1=Chest/Triceps, Day 2=Back/Biceps, Day 3=Shoulders/Core, Day 4=Rest. Treadmill 20 min is part of every session. All weights in lbs.
 
-You have access to their actual logged data. Speak directly to them by name. Be specific, data-driven, and actionable. Reference their actual numbers. Keep the tone of a knowledgeable coach who knows them well — direct, encouraging, no fluff.
+Be specific, data-driven, and direct. Reference their actual numbers. Use ALL CAPS for section headers, bullet points for details.
 
-Format your response using plain text with clear sections. Use ALL CAPS for section headers. Bullet points where appropriate. Be concise but thorough.
-
-THEIR DATA:
---- RECENT WORKOUTS (last 10) ---
-${workoutSummary||'No workouts logged yet.'}
+THEIR TRAINING DATA:
+--- RECENT SESSIONS (last 10, newest first) ---
+${workoutSummary||'No sessions yet.'}
 
 --- PERSONAL RECORDS ---
-${prSummary||'No PRs recorded yet.'}
+${prSummary||'No PRs yet.'}
 
---- BODY MEASUREMENTS (recent, lbs & inches) ---
-${measSummary||'No measurements logged yet.'}
+--- BODY MEASUREMENTS (lbs & inches) ---
+${measSummary||'None logged.'}
 
 --- SLEEP (last 7 nights) ---
-${sleepSummary||'No sleep data yet.'}
+${sleepSummary||'None logged.'}
 
 --- TODAY'S NUTRITION ---
 ${dietToday.length?dietToday.map(f=>`${f.n}(${f.cal}kcal P:${f.p}g)`).join(', '):'Nothing logged today.'}
 
-Today's date: ${TODAY}
-`;
+Today: ${TODAY}`;
 
   respEl.innerHTML=`<div class="ai-label">AI COACH</div><div class="ai-thinking">Analysing your data…</div>`;
 
