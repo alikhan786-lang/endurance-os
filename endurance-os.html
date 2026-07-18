@@ -714,6 +714,36 @@ function renderWorkoutForm(tmpl, lastSameDay, selectedDay, TEMPLATES){
     </div>`;
   }).join('');
 
+  // Build in-session add-exercise picker (adds to session only, not template)
+  const sessionCodes=activeSession.exercises.map(e=>e.code);
+  const EX_GROUPS_SESSION={
+    'CARDIO':['C1','C2','C3','C4','C5','C6','C7'],
+    'BACK & BICEPS':['BB1','BB2','BB3','BB4','BB5','BB6','BB7','BB8','BB9','BB10'],
+    'CHEST & TRICEPS':['CT1','CT2','CT3','CT4','CT5','CT6'],
+    'SHOULDERS':['SH1','SH2','SH3','SH4','SH5'],
+    'LEGS':['LG1','LG2','LG3','LG4','LG5','LG6','LG7'],
+    'CORE':['A','B','C','D','E','F'],
+    'FULL BODY':['FB1','FB2','FB3'],
+    'HOME / DUMBBELL':['HD1','HD2','HD3','HD4','HD5','HD6','HD7','HD8'],
+    'YOGA / MOBILITY':['YG1','YG2','YG3','YG4','YG5'],
+  };
+  const sessionPickerHTML=Object.entries(EX_GROUPS_SESSION).map(([grp,codes])=>{
+    const available=codes.filter(c=>EX_LIB[c]);
+    if(!available.length)return'';
+    return `<div style="margin-bottom:10px">
+      <div style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:5px">${grp}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">
+        ${available.map(c=>{
+          const already=sessionCodes.includes(c);
+          return `<div class="food-chip${already?' sess-ex-added':''}" id="sessadd_${c}"
+            style="border-color:${already?'var(--accent2)':'var(--line)'};opacity:${already?0.45:1};cursor:${already?'default':'pointer'}">
+            ${already?'✓':'+'}  ${EX_LIB[c].name}
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+  }).join('');
+
   el.innerHTML=`
   ${daySelector}
   <div class="panel">
@@ -730,7 +760,12 @@ function renderWorkoutForm(tmpl, lastSameDay, selectedDay, TEMPLATES){
     </div>
     ${lastSameDay?`<div class="note ok" style="margin-bottom:12px">Weights pre-filled from your last ${tmpl.label} session. Adjust anything that changed.</div>`:'<div class="note" style="margin-bottom:12px">Template weights loaded. Update after your session.</div>'}
     <div id="exFormList">${exForms}</div>
-    <div style="margin:12px 0">
+
+    <h3 style="margin-top:16px">ADD TO THIS SESSION</h3>
+    <p style="font-size:11px;color:var(--faint);margin-bottom:10px">Adds to today's session only — does not change your template. To permanently add, use ✏ EDIT TEMPLATE.</p>
+    <div style="max-height:260px;overflow-y:auto;padding:2px" id="sessPickerArea">${sessionPickerHTML}</div>
+
+    <div style="margin:14px 0 8px">
       <div class="lab" style="font-size:10px;color:var(--faint);letter-spacing:1px;margin-bottom:4px">SESSION NOTES</div>
       <textarea id="sessNotes" rows="2" placeholder="Energy level, how it felt, soreness…" style="resize:vertical"></textarea>
     </div>
@@ -740,23 +775,55 @@ function renderWorkoutForm(tmpl, lastSameDay, selectedDay, TEMPLATES){
     </div>
   </div>`;
 
-  // Wire all buttons via addEventListener (no inline onclick)
+  // Wire day selector buttons
   TEMPLATES.forEach(t=>{
     document.getElementById('daybtn_'+t.cycleDay)
       ?.addEventListener('click',()=>renderWorkoutForDay(t.cycleDay));
   });
+
+  // Wire edit template button
   document.getElementById('editTmplBtn')
     ?.addEventListener('click',()=>openTemplateEditor(selectedDay));
-  document.getElementById('saveWkBtn')
-    ?.addEventListener('click',saveWorkout);
-  document.getElementById('autoDetectBtn')
-    ?.addEventListener('click',renderWorkout);
+
+  // Wire save & auto-detect
+  document.getElementById('saveWkBtn')?.addEventListener('click',saveWorkout);
+  document.getElementById('autoDetectBtn')?.addEventListener('click',renderWorkout);
+
+  // Wire in-session add exercise chips
+  Object.values(EX_GROUPS_SESSION).flat().forEach(c=>{
+    const chip=document.getElementById('sessadd_'+c);
+    if(!chip||chip.classList.contains('sess-ex-added'))return;
+    chip.addEventListener('click',()=>{
+      const info=EX_LIB[c];
+      if(!info||activeSession.exercises.find(e=>e.code===c))return;
+      const defaultSets=info.type==='duration'?[{mins:20}]:info.type==='duration_s'?[{secs:30}]:[{reps:10,weight:0}];
+      activeSession.exercises.push({
+        code:c,name:info.name,type:info.type,cue:info.cue,sets:defaultSets
+      });
+      // Re-render just the exercise list and picker without full reload
+      const curNotes=document.getElementById('sessNotes')?.value||'';
+      activeSession.notes=curNotes;
+      renderWorkoutForm(tmpl,lastSameDay,selectedDay,TEMPLATES);
+    });
+  });
 }
 
 window.sv=function(ei,si,k,v){if(activeSession?.exercises[ei])activeSession.exercises[ei].sets[si][k]=+v||v;};
-window.addSet=function(ei){activeSession.exercises[ei].sets.push({reps:'',weight:''});renderWorkoutForDay(activeSession.cycleDay);};
-window.rmSet=function(ei,si){activeSession.exercises[ei].sets.splice(si,1);renderWorkoutForDay(activeSession.cycleDay);};
-window.rmEx=function(ei){activeSession.exercises.splice(ei,1);renderWorkoutForDay(activeSession.cycleDay);};
+window.addSet=function(ei){
+  activeSession.notes=document.getElementById('sessNotes')?.value||activeSession.notes;
+  activeSession.exercises[ei].sets.push({reps:'',weight:''});
+  renderWorkoutForDay(activeSession.cycleDay);
+};
+window.rmSet=function(ei,si){
+  activeSession.notes=document.getElementById('sessNotes')?.value||activeSession.notes;
+  activeSession.exercises[ei].sets.splice(si,1);
+  renderWorkoutForDay(activeSession.cycleDay);
+};
+window.rmEx=function(ei){
+  activeSession.notes=document.getElementById('sessNotes')?.value||activeSession.notes;
+  activeSession.exercises.splice(ei,1);
+  renderWorkoutForDay(activeSession.cycleDay);
+};
 
 window.saveWorkout=async function(){
   if(!activeSession||activeSession.cycleDay===4)return;
